@@ -1,0 +1,1668 @@
+import { useState, useEffect } from 'react';
+
+const screens = {
+  HOME: 'home',
+  PROGRESS: 'progress',
+  ALL_MODULES: 'all_modules',
+  GAME_INTRO: 'game_intro',
+  GAME_QUIZ: 'game_quiz',
+  GAME_SLIDER: 'game_slider',
+  GAME_RESULT: 'game_result',
+  MODULE2_INTRO: 'module2_intro',
+  MODULE2_QUIZ: 'module2_quiz',
+  MODULE3_INTRO: 'module3_intro',
+  MODULE3_FINAL: 'module3_final',
+  COMPLETION: 'completion',
+};
+
+function CircleProgress({ percent, size = 72, stroke = 5, color = '#222' }) {
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (percent / 100) * circ;
+  return (
+    <svg width={size} height={size} style={{ display: 'block' }}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#ddd" strokeWidth={stroke} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke={color}
+        strokeWidth={stroke}
+        strokeDasharray={circ}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+      />
+      <text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dominantBaseline="central"
+        style={{
+          fontSize: size * 0.28,
+          fontWeight: 700,
+          fontFamily: "'DM Sans', sans-serif",
+          fill: color,
+        }}
+      >
+        {percent}%
+      </text>
+    </svg>
+  );
+}
+
+function ProgressBar({ value, max, height = 10, color = '#222', bg = '#e0e0e0' }) {
+  const pct = Math.min((value / max) * 100, 100);
+  return (
+    <div
+      style={{
+        width: '100%',
+        height,
+        background: bg,
+        borderRadius: height / 2,
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          width: `${pct}%`,
+          height: '100%',
+          background: color,
+          borderRadius: height / 2,
+          transition: 'width 0.5s ease',
+        }}
+      />
+    </div>
+  );
+}
+
+function Btn({ children, onClick, variant = 'primary', style = {}, disabled = false }) {
+  const base = {
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: 14,
+    fontWeight: 600,
+    border: 'none',
+    borderRadius: 8,
+    padding: '10px 22px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    transition: 'all 0.2s ease',
+    opacity: disabled ? 0.5 : 1,
+  };
+  const variants = {
+    primary: { background: '#1a1a1a', color: '#fff' },
+    secondary: { background: '#f0f0f0', color: '#1a1a1a', border: '1.5px solid #ccc' },
+    accent: { background: '#2d6a4f', color: '#fff' },
+    ghost: {
+      background: 'transparent',
+      color: '#1a1a1a',
+      textDecoration: 'underline',
+      padding: '6px 10px',
+    },
+  };
+  return (
+    <button
+      onClick={disabled ? undefined : onClick}
+      style={{ ...base, ...variants[variant], ...style }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Nav({ currentScreen, onNavigate, timeLeft, moduleName, showGame }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '14px 24px',
+        borderBottom: '1.5px solid #e0e0e0',
+        background: '#fafafa',
+        flexWrap: 'wrap',
+        gap: 8,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div
+          style={{
+            fontFamily: "'Playfair Display', serif",
+            fontWeight: 700,
+            fontSize: 20,
+            letterSpacing: -0.5,
+          }}
+        >
+          Smart<span style={{ color: '#2d6a4f' }}>Benefits</span>
+        </div>
+        {showGame && moduleName && (
+          <span
+            style={{
+              fontSize: 13,
+              color: '#666',
+              fontFamily: "'DM Sans', sans-serif",
+              marginLeft: 8,
+            }}
+          >
+            {moduleName}
+          </span>
+        )}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {showGame && timeLeft && (
+          <span
+            style={{
+              fontSize: 13,
+              fontFamily: "'DM Mono', monospace",
+              color: '#888',
+              background: '#f0f0f0',
+              padding: '4px 10px',
+              borderRadius: 6,
+            }}
+          >
+            ⏱ {timeLeft}
+          </span>
+        )}
+        <Btn
+          variant="secondary"
+          onClick={() => onNavigate(screens.HOME)}
+          style={{ fontSize: 12, padding: '6px 14px' }}
+        >
+          Home
+        </Btn>
+        <Btn
+          variant="secondary"
+          onClick={() => onNavigate(screens.ALL_MODULES)}
+          style={{ fontSize: 12, padding: '6px 14px' }}
+        >
+          All Modules
+        </Btn>
+        <Btn
+          variant="secondary"
+          onClick={() => onNavigate(screens.PROGRESS)}
+          style={{ fontSize: 12, padding: '6px 14px' }}
+        >
+          My Progress
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
+function ModuleCard({ level, title, difficulty, points, status, onClick, prefix = 'Level' }) {
+  const diffColors = { Easy: '#2d6a4f', Medium: '#b8860b', Hard: '#a33' };
+  const [hovered, setHovered] = useState(false);
+  const isLocked = status === 'locked';
+  return (
+    <div
+      onClick={isLocked ? undefined : onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: isLocked ? '#f5f5f5' : '#fff',
+        border: hovered && !isLocked ? '1.5px solid #2d6a4f' : '1.5px solid #e4e4e4',
+        borderRadius: 12,
+        padding: 20,
+        cursor: isLocked ? 'not-allowed' : 'pointer',
+        transition: 'all 0.2s ease',
+        flex: '1 1 0',
+        minWidth: 200,
+        position: 'relative',
+        overflow: 'hidden',
+        opacity: isLocked ? 0.55 : 1,
+        transform: hovered && !isLocked ? 'translateY(-2px)' : 'none',
+        boxShadow: hovered && !isLocked ? '0 4px 16px rgba(0,0,0,0.08)' : 'none',
+      }}
+    >
+      {status === 'completed' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            background: '#2d6a4f',
+            color: '#fff',
+            fontSize: 11,
+            padding: '2px 8px',
+            borderRadius: 4,
+            fontWeight: 600,
+          }}
+        >
+          ✓ Done
+        </div>
+      )}
+      {status === 'current' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            background: '#b8860b',
+            color: '#fff',
+            fontSize: 11,
+            padding: '2px 8px',
+            borderRadius: 4,
+            fontWeight: 600,
+          }}
+        >
+          In Progress
+        </div>
+      )}
+      {isLocked && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            background: '#999',
+            color: '#fff',
+            fontSize: 11,
+            padding: '2px 8px',
+            borderRadius: 4,
+            fontWeight: 600,
+          }}
+        >
+          🔒 Locked
+        </div>
+      )}
+      <div
+        style={{
+          fontSize: 12,
+          color: '#888',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: 1,
+          marginBottom: 6,
+        }}
+      >
+        {prefix} {level}
+      </div>
+      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8, lineHeight: 1.3 }}>{title}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+        <span
+          style={{
+            fontSize: 12,
+            color: diffColors[difficulty] || '#666',
+            fontWeight: 600,
+            background: `${diffColors[difficulty]}15`,
+            padding: '2px 8px',
+            borderRadius: 4,
+          }}
+        >
+          {difficulty}
+        </span>
+        <span style={{ fontSize: 12, color: '#888' }}>{points} pts</span>
+      </div>
+    </div>
+  );
+}
+
+function Mascot({ message, style = {} }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, ...style }}>
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: '50%',
+          background: '#2d6a4f',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 24,
+          flexShrink: 0,
+        }}
+      >
+        🐷
+      </div>
+      <div
+        style={{
+          background: '#f0f7f4',
+          border: '1.5px solid #c8e6d8',
+          borderRadius: '12px 12px 12px 2px',
+          padding: '10px 16px',
+          fontSize: 14,
+          color: '#1a1a1a',
+          maxWidth: 320,
+          lineHeight: 1.5,
+        }}
+      >
+        {message}
+      </div>
+    </div>
+  );
+}
+
+function PointsPopup({ points, show }) {
+  if (!show) return null;
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: '40%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        background: '#2d6a4f',
+        color: '#fff',
+        padding: '16px 32px',
+        borderRadius: 12,
+        fontSize: 22,
+        fontWeight: 700,
+        fontFamily: "'DM Sans', sans-serif",
+        boxShadow: '0 8px 32px rgba(45,106,79,0.3)',
+        zIndex: 100,
+        animation: 'fadeInUp 0.5s ease forwards',
+      }}
+    >
+      +{points} Points! 🎉
+    </div>
+  );
+}
+
+function App() {
+  const [screen, setScreen] = useState(screens.HOME);
+  const userName = 'Alex';
+  const [points, setPoints] = useState(0);
+  const [currentModule, setCurrentModule] = useState(1);
+  const [moduleProgress, setModuleProgress] = useState({ 1: 0, 2: 0, 3: 0 });
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [sliderValue, setSliderValue] = useState(150);
+  const [showPoints, setShowPoints] = useState(false);
+  const [pointsEarned, setPointsEarned] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(355);
+
+  const gameScreens = [
+    screens.GAME_INTRO,
+    screens.GAME_QUIZ,
+    screens.GAME_SLIDER,
+    screens.GAME_RESULT,
+    screens.MODULE2_INTRO,
+    screens.MODULE2_QUIZ,
+    screens.MODULE3_INTRO,
+    screens.MODULE3_FINAL,
+  ];
+
+  useEffect(() => {
+    if (gameScreens.includes(screen) && timeLeft > 0) {
+      const t = setTimeout(() => setTimeLeft((tl) => tl - 1), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [screen, timeLeft]);
+
+  const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+  const awardPoints = (pts) => {
+    setPointsEarned(pts);
+    setShowPoints(true);
+    setPoints((p) => p + pts);
+    setTimeout(() => setShowPoints(false), 1500);
+  };
+
+  const getRank = () => {
+    if (points >= 400) return 'HSA Master';
+    if (points >= 250) return 'Benefits Pro';
+    if (points >= 100) return 'Health Explorer';
+    return 'Newcomer';
+  };
+
+  const isGameScreen = gameScreens.includes(screen);
+
+  const navigate = (s) => {
+    setScreen(s);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setSelectedPlan(null);
+  };
+
+  // ==================== HOME ====================
+  const renderHome = () => (
+    <div style={{ padding: '40px 32px', maxWidth: 720, margin: '0 auto' }}>
+      <div style={{ display: 'flex', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
+        <div style={{ flex: '1 1 380px', background: '#f8f9fa', borderRadius: 16, padding: 32 }}>
+          <div style={{ fontSize: 15, color: '#666', marginBottom: 4 }}>Hey {userName},</div>
+          <div
+            style={{
+              fontSize: 26,
+              fontWeight: 700,
+              lineHeight: 1.25,
+              fontFamily: "'Playfair Display', serif",
+            }}
+          >
+            Ready to level up your
+            <br />
+            health savings game?
+          </div>
+          <Mascot message="Let's keep learning! You're doing great 🌟" style={{ marginTop: 20 }} />
+        </div>
+        <div
+          style={{
+            flex: '0 0 200px',
+            background: '#1a1a1a',
+            borderRadius: 16,
+            padding: 28,
+            color: '#fff',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div style={{ fontSize: 13, color: '#aaa', marginBottom: 8 }}>Current Progress</div>
+          <CircleProgress
+            percent={moduleProgress[currentModule]}
+            size={88}
+            stroke={6}
+            color="#2d6a4f"
+          />
+          <div style={{ fontSize: 13, color: '#ccc', marginTop: 8, textAlign: 'center' }}>
+            score on Module {currentModule}!
+          </div>
+          <Btn
+            variant="accent"
+            onClick={() => {
+              if (currentModule === 1) navigate(screens.GAME_INTRO);
+              else if (currentModule === 2) navigate(screens.MODULE2_INTRO);
+              else navigate(screens.MODULE3_INTRO);
+            }}
+            style={{ marginTop: 14, fontSize: 13, width: '100%' }}
+          >
+            Continue last game →
+          </Btn>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
+        <div
+          style={{
+            flex: 1,
+            minWidth: 140,
+            background: '#f0f7f4',
+            borderRadius: 12,
+            padding: '16px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 28 }}>⭐</span>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 700 }}>{points}</div>
+            <div style={{ fontSize: 12, color: '#666' }}>Total Points</div>
+          </div>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            minWidth: 140,
+            background: '#f0f7f4',
+            borderRadius: 12,
+            padding: '16px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 28 }}>🏅</span>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>{getRank()}</div>
+            <div style={{ fontSize: 12, color: '#666' }}>Current Rank</div>
+          </div>
+        </div>
+        <div
+          style={{
+            flex: 1,
+            minWidth: 140,
+            background: '#f0f7f4',
+            borderRadius: 12,
+            padding: '16px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 28 }}>🔥</span>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 700 }}>{streak}</div>
+            <div style={{ fontSize: 12, color: '#666' }}>Streak</div>
+          </div>
+        </div>
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Recommended Modules</div>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        <ModuleCard
+          level={1}
+          title="Intro to Healthcare"
+          difficulty="Easy"
+          points="0–150"
+          status={moduleProgress[1] === 100 ? 'completed' : 'current'}
+          onClick={() => {
+            setCurrentModule(1);
+            navigate(screens.GAME_INTRO);
+          }}
+        />
+        <ModuleCard
+          level={2}
+          title="HSAs? What Are They?"
+          difficulty="Medium"
+          points="150–300"
+          status={
+            moduleProgress[1] < 100 ? 'locked' : moduleProgress[2] === 100 ? 'completed' : 'current'
+          }
+          onClick={() => {
+            if (moduleProgress[1] >= 100) {
+              setCurrentModule(2);
+              navigate(screens.MODULE2_INTRO);
+            }
+          }}
+        />
+        <ModuleCard
+          level={3}
+          title="HSAs? Sign Me Up!"
+          difficulty="Hard"
+          points="300–450"
+          status={
+            moduleProgress[2] < 100 ? 'locked' : moduleProgress[3] === 100 ? 'completed' : 'current'
+          }
+          onClick={() => {
+            if (moduleProgress[2] >= 100) {
+              setCurrentModule(3);
+              navigate(screens.MODULE3_INTRO);
+            }
+          }}
+        />
+      </div>
+    </div>
+  );
+
+  // ==================== PROGRESS ====================
+  const renderProgress = () => (
+    <div style={{ padding: '40px 32px', maxWidth: 600, margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <div
+          style={{
+            fontSize: 13,
+            color: '#888',
+            textTransform: 'uppercase',
+            letterSpacing: 1,
+            marginBottom: 4,
+          }}
+        >
+          Current Rank
+        </div>
+        <div
+          style={{
+            fontSize: 36,
+            fontWeight: 700,
+            fontFamily: "'Playfair Display', serif",
+            marginBottom: 16,
+          }}
+        >
+          {getRank()}
+        </div>
+        <div style={{ fontSize: 14, color: '#666', marginBottom: 8 }}>
+          Overall Game Progress: {Object.values(moduleProgress).filter((v) => v === 100).length}/3 |{' '}
+          {Math.round(Object.values(moduleProgress).reduce((a, b) => a + b, 0) / 3)}%
+        </div>
+        <ProgressBar
+          value={Object.values(moduleProgress).reduce((a, b) => a + b, 0)}
+          max={300}
+          height={12}
+          color="#2d6a4f"
+        />
+      </div>
+      <div style={{ display: 'flex', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
+        {[
+          { v: points, l: 'Total Points' },
+          { v: streak, l: 'Best Streak' },
+          { v: Object.values(moduleProgress).filter((v) => v === 100).length, l: 'Modules Done' },
+        ].map((s, i) => (
+          <div
+            key={i}
+            style={{
+              flex: 1,
+              minWidth: 120,
+              textAlign: 'center',
+              background: '#f8f9fa',
+              borderRadius: 12,
+              padding: 16,
+            }}
+          >
+            <div style={{ fontSize: 28, fontWeight: 700 }}>{s.v}</div>
+            <div style={{ fontSize: 12, color: '#888' }}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Completed Modules</div>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        {[
+          {
+            level: 1,
+            title: 'Intro to Healthcare',
+            score: moduleProgress[1],
+            screen: screens.GAME_INTRO,
+          },
+          {
+            level: 2,
+            title: 'HSAs: What Are They?',
+            score: moduleProgress[2],
+            screen: screens.MODULE2_INTRO,
+          },
+          {
+            level: 3,
+            title: 'HSAs: Sign Me Up!',
+            score: moduleProgress[3],
+            screen: screens.MODULE3_INTRO,
+          },
+        ]
+          .filter((m) => m.score === 100)
+          .map((m) => (
+            <div
+              key={m.level}
+              style={{
+                flex: '1 1 240px',
+                background: '#fff',
+                border: '1.5px solid #e4e4e4',
+                borderRadius: 12,
+                padding: 24,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700 }}>Level {m.level}</div>
+                <div style={{ fontSize: 13, color: '#666', marginTop: 2 }}>
+                  Perfect score! Nice job.
+                </div>
+                <Btn
+                  variant="ghost"
+                  onClick={() => {
+                    setCurrentModule(m.level);
+                    navigate(m.screen);
+                  }}
+                  style={{ marginTop: 8, fontSize: 12 }}
+                >
+                  Play again
+                </Btn>
+              </div>
+              <CircleProgress percent={m.score} size={68} stroke={5} color="#2d6a4f" />
+            </div>
+          ))}
+        {moduleProgress[1] !== 100 && moduleProgress[2] !== 100 && moduleProgress[3] !== 100 && (
+          <div style={{ color: '#888', fontSize: 14, padding: 20 }}>
+            No modules completed yet. Start playing!
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ==================== ALL MODULES ====================
+  const renderAllModules = () => (
+    <div style={{ padding: '40px 32px', maxWidth: 640, margin: '0 auto' }}>
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          fontFamily: "'Playfair Display', serif",
+          marginBottom: 8,
+        }}
+      >
+        All Modules
+      </div>
+      <div style={{ fontSize: 14, color: '#666', marginBottom: 28 }}>
+        Complete modules in order to unlock the next level.
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <ModuleCard
+          prefix="Module"
+          level={1}
+          title="Intro to Healthcare"
+          difficulty="Easy"
+          points="0–150 pts"
+          status={moduleProgress[1] === 100 ? 'completed' : 'current'}
+          onClick={() => {
+            setCurrentModule(1);
+            navigate(screens.GAME_INTRO);
+          }}
+        />
+        <ModuleCard
+          prefix="Module"
+          level={2}
+          title="HSAs? What Are They?"
+          difficulty="Medium"
+          points="150–300 pts"
+          status={
+            moduleProgress[1] < 100 ? 'locked' : moduleProgress[2] === 100 ? 'completed' : 'current'
+          }
+          onClick={() => {
+            if (moduleProgress[1] >= 100) {
+              setCurrentModule(2);
+              navigate(screens.MODULE2_INTRO);
+            }
+          }}
+        />
+        <ModuleCard
+          prefix="Module"
+          level={3}
+          title="HSAs? Sign Me Up!"
+          difficulty="Hard"
+          points="300–450 pts"
+          status={
+            moduleProgress[2] < 100 ? 'locked' : moduleProgress[3] === 100 ? 'completed' : 'current'
+          }
+          onClick={() => {
+            if (moduleProgress[2] >= 100) {
+              setCurrentModule(3);
+              navigate(screens.MODULE3_INTRO);
+            }
+          }}
+        />
+      </div>
+    </div>
+  );
+
+  // ==================== MODULE 1: SCENARIO ====================
+  const renderGameIntro = () => (
+    <div style={{ padding: '40px 32px', maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+      <div
+        style={{
+          background: '#f8f9fa',
+          borderRadius: 12,
+          padding: '8px 16px',
+          display: 'inline-block',
+          marginBottom: 24,
+        }}
+      >
+        <span style={{ fontWeight: 600 }}>Level 1</span> · Insurance Basics ·{' '}
+        <span style={{ color: '#2d6a4f' }}>{moduleProgress[1]}%</span>
+      </div>
+      <div
+        style={{
+          fontSize: 28,
+          fontWeight: 700,
+          fontFamily: "'Playfair Display', serif",
+          marginBottom: 8,
+        }}
+      >
+        You received a job offer
+      </div>
+      <div style={{ fontSize: 15, color: '#666', marginBottom: 32 }}>Choose your health plan:</div>
+      <div
+        style={{
+          display: 'flex',
+          gap: 20,
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          marginBottom: 24,
+        }}
+      >
+        <div
+          onClick={() => setSelectedPlan('A')}
+          style={{
+            flex: '1 1 220px',
+            maxWidth: 260,
+            border: selectedPlan === 'A' ? '2.5px solid #1a1a1a' : '1.5px solid #ddd',
+            borderRadius: 14,
+            padding: 24,
+            cursor: 'pointer',
+            background: selectedPlan === 'A' ? '#f8f9fa' : '#fff',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 12 }}>Plan A</div>
+          <div style={{ fontSize: 14, color: '#444', textAlign: 'left', lineHeight: 1.8 }}>
+            • Low Deductible
+            <br />• Copayments included
+            <br />• Higher monthly premium
+          </div>
+          <div style={{ fontSize: 12, color: '#888', marginTop: 12, fontStyle: 'italic' }}>
+            More costly monthly, but more predictable costs
+          </div>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            fontSize: 14,
+            color: '#aaa',
+            fontWeight: 600,
+          }}
+        >
+          OR
+        </div>
+        <div
+          onClick={() => setSelectedPlan('B')}
+          style={{
+            flex: '1 1 220px',
+            maxWidth: 260,
+            border: selectedPlan === 'B' ? '2.5px solid #2d6a4f' : '1.5px solid #ddd',
+            borderRadius: 14,
+            padding: 24,
+            cursor: 'pointer',
+            background: selectedPlan === 'B' ? '#f0f7f4' : '#fff',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 12 }}>Plan B</div>
+          <div style={{ fontSize: 14, color: '#444', textAlign: 'left', lineHeight: 1.8 }}>
+            • High Deductible
+            <br />• HSA Eligible
+            <br />• Lower Premium
+          </div>
+          <div style={{ fontSize: 12, color: '#888', marginTop: 12, fontStyle: 'italic' }}>
+            Pays to be healthy, can save tax-free money
+          </div>
+        </div>
+      </div>
+      {selectedPlan && (
+        <div style={{ marginBottom: 20 }}>
+          {selectedPlan === 'B' ? (
+            <Mascot message="Great choice! A high-deductible plan qualifies you for an HSA — that means tax-free savings for medical expenses! 💰" />
+          ) : (
+            <Mascot message="That's a safe choice! But did you know Plan B lets you open an HSA for tax-free medical savings? Something to think about! 🤔" />
+          )}
+        </div>
+      )}
+      <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>
+        Not sure? Guess! It's just a practice session.
+      </div>
+      <Btn variant="accent" onClick={() => navigate(screens.GAME_QUIZ)} disabled={!selectedPlan}>
+        Continue →
+      </Btn>
+    </div>
+  );
+
+  // ==================== MODULE 1: QUIZ ====================
+  const renderGameQuiz = () => {
+    const correctAnswer = 'B';
+    const handleAnswer = (ans) => {
+      setSelectedAnswer(ans);
+      setShowFeedback(true);
+      if (ans === correctAnswer) {
+        const pts = streak >= 2 ? 50 : 25;
+        setStreak((s) => s + 1);
+        awardPoints(pts);
+        setModuleProgress((p) => ({ ...p, 1: Math.min(p[1] + 10, 100) }));
+      } else {
+        setStreak(0);
+      }
+    };
+    return (
+      <div style={{ padding: '40px 32px', maxWidth: 560, margin: '0 auto' }}>
+        <div
+          style={{
+            background: '#f8f9fa',
+            borderRadius: 12,
+            padding: '8px 16px',
+            display: 'inline-block',
+            marginBottom: 24,
+            textAlign: 'center',
+            width: '100%',
+          }}
+        >
+          <span style={{ fontWeight: 600 }}>Level 1</span> · Insurance Basics ·{' '}
+          <span style={{ color: '#2d6a4f' }}>{moduleProgress[1]}%</span>
+        </div>
+        <div
+          style={{
+            background: '#f0f7f4',
+            border: '1.5px solid #c8e6d8',
+            borderRadius: 12,
+            padding: '14px 18px',
+            marginBottom: 24,
+            fontSize: 14,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 10,
+          }}
+        >
+          <span style={{ fontSize: 18 }}>ℹ️</span>
+          <span>
+            HDHP stands for <strong>High-Deductible Health Plan</strong>. Only HDHPs qualify for an
+            HSA.
+          </span>
+        </div>
+        <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 20, textAlign: 'center' }}>
+          Which plan qualifies for an HSA?
+        </div>
+        {[
+          { key: 'A', text: 'Low deductible plan' },
+          { key: 'B', text: 'High deductible plan' },
+        ].map((opt) => {
+          let bg = '#fff',
+            border = '1.5px solid #ddd';
+          if (showFeedback && opt.key === correctAnswer) {
+            bg = '#e8f5e9';
+            border = '2px solid #2d6a4f';
+          } else if (showFeedback && selectedAnswer === opt.key && opt.key !== correctAnswer) {
+            bg = '#fce4ec';
+            border = '2px solid #c62828';
+          } else if (selectedAnswer === opt.key && !showFeedback) {
+            bg = '#f8f9fa';
+            border = '2px solid #1a1a1a';
+          }
+          return (
+            <div
+              key={opt.key}
+              onClick={() => !showFeedback && handleAnswer(opt.key)}
+              style={{
+                background: bg,
+                border,
+                borderRadius: 10,
+                padding: '14px 20px',
+                marginBottom: 12,
+                cursor: showFeedback ? 'default' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                transition: 'all 0.2s',
+              }}
+            >
+              <div
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  border: selectedAnswer === opt.key ? '6px solid #2d6a4f' : '2px solid #bbb',
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 15 }}>
+                {opt.key}. {opt.text}
+              </span>
+            </div>
+          );
+        })}
+        {showFeedback && (
+          <div style={{ textAlign: 'center', marginTop: 20 }}>
+            {selectedAnswer === correctAnswer ? (
+              <>
+                <div style={{ color: '#2d6a4f', fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
+                  +{streak >= 3 ? 50 : 25} Points! {streak >= 3 && '🔥 Streak bonus!'}
+                </div>
+                <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>
+                  Level 2 Unlocked!
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    marginBottom: 16,
+                  }}
+                >
+                  <span style={{ fontSize: 13 }}>Insurance Basics</span>
+                  <span style={{ color: '#888' }}>→</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#2d6a4f' }}>
+                    {moduleProgress[1]}%
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div style={{ marginBottom: 16 }}>
+                <Mascot message="Not quite! Remember: only High-Deductible Health Plans (HDHPs) qualify for an HSA. The 'high deductible' is the key! Try the next one 💪" />
+              </div>
+            )}
+            <Btn variant="accent" onClick={() => navigate(screens.GAME_SLIDER)}>
+              Continue →
+            </Btn>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ==================== MODULE 1: SLIDER ====================
+  const renderGameSlider = () => {
+    const savings = Math.round(sliderValue * 0.25 * 12);
+    const yearTotal = sliderValue * 12;
+    return (
+      <div style={{ padding: '40px 32px', maxWidth: 560, margin: '0 auto' }}>
+        <div
+          style={{
+            background: '#f8f9fa',
+            borderRadius: 12,
+            padding: '8px 16px',
+            display: 'inline-block',
+            marginBottom: 24,
+            textAlign: 'center',
+            width: '100%',
+          }}
+        >
+          <span style={{ fontWeight: 600 }}>Level 1</span> · Insurance Basics ·{' '}
+          <span style={{ color: '#2d6a4f' }}>{moduleProgress[1]}%</span>
+        </div>
+        <div style={{ textAlign: 'center', marginBottom: 8 }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#2d6a4f' }}>
+            Great choice! You are eligible for an HSA.
+          </div>
+          <div style={{ fontSize: 15, color: '#666', marginTop: 4 }}>
+            How much will you contribute to your HSA each month?
+          </div>
+        </div>
+        <div style={{ margin: '28px 0', padding: '0 8px' }}>
+          <input
+            type="range"
+            min={0}
+            max={358}
+            step={1}
+            value={sliderValue}
+            onChange={(e) => setSliderValue(Number(e.target.value))}
+            style={{ width: '100%', accentColor: '#2d6a4f', height: 8 }}
+          />
+          <div style={{ textAlign: 'center', marginTop: 8 }}>
+            <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'DM Mono', monospace" }}>
+              ${sliderValue}
+            </span>
+            <span style={{ fontSize: 14, color: '#888' }}> per month</span>
+          </div>
+          <div style={{ fontSize: 12, color: '#888', textAlign: 'center', marginTop: 2 }}>
+            2025 limit: $4,300/yr individual · Max ~$358/mo
+          </div>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            gap: 48,
+            alignItems: 'flex-start',
+            justifyContent: 'center',
+            margin: '24px 0',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ textAlign: 'center', width: 160 }}>
+            <div style={{ fontSize: 48, marginBottom: 8, lineHeight: 1 }}>🐷</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: '#2d6a4f' }}>
+              ${yearTotal.toLocaleString()}
+            </div>
+            <div style={{ fontSize: 13, color: '#666', marginTop: 2 }}>Yearly HSA Savings</div>
+          </div>
+          <div style={{ textAlign: 'center', width: 160 }}>
+            <div style={{ fontSize: 48, marginBottom: 8, lineHeight: 1 }}>💰</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: '#b8860b' }}>
+              ${savings.toLocaleString()}
+            </div>
+            <div style={{ fontSize: 13, color: '#666', marginTop: 2 }}>Tax-Free Savings</div>
+          </div>
+        </div>
+        <Mascot
+          message="Try adjusting your monthly contribution. Contributions are tax-deductible, too! The earlier you start, the more your money grows 📈"
+          style={{ marginBottom: 24 }}
+        />
+        <div style={{ textAlign: 'center' }}>
+          <Btn
+            variant="accent"
+            onClick={() => {
+              setModuleProgress((p) => ({ ...p, 1: 100 }));
+              awardPoints(75);
+              navigate(screens.GAME_RESULT);
+            }}
+          >
+            Lock in Contribution →
+          </Btn>
+        </div>
+      </div>
+    );
+  };
+
+  // ==================== MODULE 1: RESULT ====================
+  const renderGameResult = () => (
+    <div style={{ padding: '40px 32px', maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          fontFamily: "'Playfair Display', serif",
+          marginBottom: 12,
+        }}
+      >
+        Module 1 Complete!
+      </div>
+      <div style={{ fontSize: 14, color: '#666', marginBottom: 24, lineHeight: 1.6 }}>
+        You've learned about healthcare plans, deductibles, premiums, and how an HDHP qualifies you
+        for an HSA.
+      </div>
+      <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 28 }}>
+        <div style={{ background: '#f0f7f4', borderRadius: 12, padding: '16px 24px' }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#2d6a4f' }}>{points}</div>
+          <div style={{ fontSize: 12, color: '#666' }}>Points Earned</div>
+        </div>
+        <div style={{ background: '#f8f9fa', borderRadius: 12, padding: '16px 24px' }}>
+          <div style={{ fontSize: 24, fontWeight: 700 }}>100%</div>
+          <div style={{ fontSize: 12, color: '#666' }}>Accuracy</div>
+        </div>
+      </div>
+      <Mascot
+        message="Amazing work! Ready to learn about HSAs in detail? Module 2 awaits! 🚀"
+        style={{ marginBottom: 24, justifyContent: 'center' }}
+      />
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+        <Btn
+          variant="secondary"
+          onClick={() => {
+            setModuleProgress((p) => ({ ...p, 1: 100 }));
+            navigate(screens.HOME);
+          }}
+        >
+          Back to Home
+        </Btn>
+        <Btn
+          variant="accent"
+          onClick={() => {
+            setModuleProgress((p) => ({ ...p, 1: 100 }));
+            setCurrentModule(2);
+            navigate(screens.MODULE2_INTRO);
+          }}
+        >
+          Start Module 2 →
+        </Btn>
+      </div>
+    </div>
+  );
+
+  // ==================== MODULE 2 ====================
+  const renderModule2Intro = () => (
+    <div style={{ padding: '40px 32px', maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+      <div
+        style={{
+          background: '#f8f9fa',
+          borderRadius: 12,
+          padding: '8px 16px',
+          display: 'inline-block',
+          marginBottom: 24,
+        }}
+      >
+        <span style={{ fontWeight: 600 }}>Level 2</span> · HSAs: What Are They? ·{' '}
+        <span style={{ color: '#2d6a4f' }}>{moduleProgress[2]}%</span>
+      </div>
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          fontFamily: "'Playfair Display', serif",
+          marginBottom: 12,
+        }}
+      >
+        Welcome to Module 2!
+      </div>
+      <Mascot
+        message="Now let's dive deep into HSAs — eligibility, contribution limits, tax benefits, and what you can use the funds for. Ready?"
+        style={{ marginBottom: 24, justifyContent: 'center' }}
+      />
+      <div
+        style={{
+          background: '#f8f9fa',
+          borderRadius: 12,
+          padding: 20,
+          textAlign: 'left',
+          marginBottom: 24,
+        }}
+      >
+        <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>What you'll learn:</div>
+        <div style={{ fontSize: 14, color: '#444', lineHeight: 1.8 }}>
+          ✅ HSA eligibility requirements
+          <br />✅ Annual contribution limits ($4,300 individual / $8,550 family)
+          <br />
+          ✅ Tax advantages (triple tax benefit)
+          <br />✅ What HSA funds can be used for
+          <br />✅ How HSA funds roll over year to year
+        </div>
+      </div>
+      <Btn variant="accent" onClick={() => navigate(screens.MODULE2_QUIZ)}>
+        Begin Module 2 →
+      </Btn>
+    </div>
+  );
+
+  const renderModule2Quiz = () => {
+    const correctAnswer = 'C';
+    const handleAnswer = (ans) => {
+      setSelectedAnswer(ans);
+      setShowFeedback(true);
+      if (ans === correctAnswer) {
+        awardPoints(25);
+        setModuleProgress((p) => ({ ...p, 2: Math.min(p[2] + 25, 100) }));
+        setStreak((s) => s + 1);
+      } else {
+        setStreak(0);
+      }
+    };
+    return (
+      <div style={{ padding: '40px 32px', maxWidth: 560, margin: '0 auto' }}>
+        <div
+          style={{
+            background: '#f8f9fa',
+            borderRadius: 12,
+            padding: '8px 16px',
+            display: 'inline-block',
+            marginBottom: 24,
+            textAlign: 'center',
+            width: '100%',
+          }}
+        >
+          <span style={{ fontWeight: 600 }}>Level 2</span> · HSAs: What Are They? ·{' '}
+          <span style={{ color: '#2d6a4f' }}>{moduleProgress[2]}%</span>
+        </div>
+        <div
+          style={{
+            background: '#f0f7f4',
+            border: '1.5px solid #c8e6d8',
+            borderRadius: 12,
+            padding: '14px 18px',
+            marginBottom: 24,
+            fontSize: 14,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 10,
+          }}
+        >
+          <span style={{ fontSize: 18 }}>ℹ️</span>
+          <span>
+            To open an HSA, you must: have a qualifying HDHP, not be covered by a non-qualifying
+            plan, not have Medicare, and not be claimed as a dependent.
+          </span>
+        </div>
+        <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 20, textAlign: 'center' }}>
+          Who is NOT eligible for an HSA?
+        </div>
+        {[
+          { key: 'A', text: 'Someone with a high-deductible health plan' },
+          { key: 'B', text: 'A 22-year-old with an HDHP through work' },
+          { key: 'C', text: 'Someone enrolled in Medicare' },
+          { key: 'D', text: 'A freelancer with an HDHP' },
+        ].map((opt) => {
+          let bg = '#fff',
+            border = '1.5px solid #ddd';
+          if (showFeedback && opt.key === correctAnswer) {
+            bg = '#e8f5e9';
+            border = '2px solid #2d6a4f';
+          } else if (showFeedback && selectedAnswer === opt.key && opt.key !== correctAnswer) {
+            bg = '#fce4ec';
+            border = '2px solid #c62828';
+          } else if (selectedAnswer === opt.key && !showFeedback) {
+            bg = '#f8f9fa';
+            border = '2px solid #1a1a1a';
+          }
+          return (
+            <div
+              key={opt.key}
+              onClick={() => !showFeedback && handleAnswer(opt.key)}
+              style={{
+                background: bg,
+                border,
+                borderRadius: 10,
+                padding: '14px 20px',
+                marginBottom: 10,
+                cursor: showFeedback ? 'default' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                transition: 'all 0.2s',
+              }}
+            >
+              <div
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  border: selectedAnswer === opt.key ? '6px solid #2d6a4f' : '2px solid #bbb',
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ fontSize: 14 }}>
+                {opt.key}. {opt.text}
+              </span>
+            </div>
+          );
+        })}
+        {showFeedback && (
+          <div style={{ textAlign: 'center', marginTop: 20 }}>
+            {selectedAnswer === correctAnswer ? (
+              <Mascot message="Correct! Medicare enrollees are NOT eligible for an HSA. This is a key rule to remember! +25 pts ⭐" />
+            ) : (
+              <Mascot message="Not quite. People with Medicare cannot open or contribute to an HSA — that's one of the four eligibility requirements!" />
+            )}
+            <Btn
+              variant="accent"
+              onClick={() => {
+                setModuleProgress((p) => ({ ...p, 2: 100 }));
+                setCurrentModule(3);
+                navigate(screens.MODULE3_INTRO);
+              }}
+              style={{ marginTop: 16 }}
+            >
+              Continue to Module 3 →
+            </Btn>
+            <br />
+            <Btn
+              variant="ghost"
+              onClick={() => {
+                setModuleProgress((p) => ({ ...p, 2: 100 }));
+                navigate(screens.HOME);
+              }}
+              style={{ marginTop: 8 }}
+            >
+              Back to Home
+            </Btn>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ==================== MODULE 3 ====================
+  const renderModule3Intro = () => (
+    <div style={{ padding: '40px 32px', maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+      <div
+        style={{
+          background: '#f8f9fa',
+          borderRadius: 12,
+          padding: '8px 16px',
+          display: 'inline-block',
+          marginBottom: 24,
+        }}
+      >
+        <span style={{ fontWeight: 600 }}>Level 3</span> · HSAs: Sign Me Up! ·{' '}
+        <span style={{ color: '#2d6a4f' }}>{moduleProgress[3]}%</span>
+      </div>
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          fontFamily: "'Playfair Display', serif",
+          marginBottom: 12,
+        }}
+      >
+        Time for Action!
+      </div>
+      <div style={{ fontSize: 15, color: '#666', marginBottom: 24, lineHeight: 1.6 }}>
+        You've learned the basics and understand HSAs. Now let's put it all together and prepare you
+        for real-world HSA decisions.
+      </div>
+      <div
+        style={{
+          background: '#f0f7f4',
+          borderRadius: 12,
+          padding: 20,
+          textAlign: 'left',
+          marginBottom: 24,
+        }}
+      >
+        <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>Final Challenge:</div>
+        <div style={{ fontSize: 14, color: '#444', lineHeight: 1.8 }}>
+          🎯 Apply everything you've learned
+          <br />
+          🎯 Make real HSA decisions in scenarios
+          <br />
+          🎯 Earn up to 150 bonus points
+          <br />
+          🎯 Get personalized next steps to explore HSAs further
+        </div>
+      </div>
+      <Mascot
+        message="This is the final stretch! Show me what you've learned and get ready to take control of your health savings! 💪"
+        style={{ marginBottom: 24, justifyContent: 'center' }}
+      />
+      <Btn variant="accent" onClick={() => navigate(screens.MODULE3_FINAL)}>
+        Start Final Challenge →
+      </Btn>
+    </div>
+  );
+
+  const renderModule3Final = () => (
+    <div style={{ padding: '40px 32px', maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+      <div
+        style={{
+          background: '#f8f9fa',
+          borderRadius: 12,
+          padding: '8px 16px',
+          display: 'inline-block',
+          marginBottom: 24,
+        }}
+      >
+        <span style={{ fontWeight: 600 }}>Level 3</span> · Final Challenge ·{' '}
+        <span style={{ color: '#2d6a4f' }}>Complete!</span>
+      </div>
+      <div style={{ fontSize: 48, marginBottom: 12 }}>🏆</div>
+      <div
+        style={{
+          fontSize: 26,
+          fontWeight: 700,
+          fontFamily: "'Playfair Display', serif",
+          marginBottom: 8,
+          lineHeight: 1.3,
+        }}
+      >
+        Congrats! You've successfully helped {userName} feel prepared for all things HSA.
+      </div>
+      <div style={{ fontSize: 16, color: '#666', marginBottom: 28 }}>
+        You now have the knowledge to make smart healthcare savings decisions!
+      </div>
+      <Mascot
+        message="You've earned the HSA Master rank! You understand healthcare plans, HSA eligibility, tax benefits, and contribution strategies. Keep going! 🎓"
+        style={{ marginBottom: 28, justifyContent: 'center' }}
+      />
+      <div
+        style={{
+          display: 'flex',
+          gap: 16,
+          justifyContent: 'center',
+          marginBottom: 28,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ background: '#f0f7f4', borderRadius: 12, padding: '16px 24px' }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#2d6a4f' }}>{points + 150}</div>
+          <div style={{ fontSize: 12, color: '#666' }}>Total Points</div>
+        </div>
+        <div style={{ background: '#f8f9fa', borderRadius: 12, padding: '16px 24px' }}>
+          <div style={{ fontSize: 24, fontWeight: 700 }}>HSA Master</div>
+          <div style={{ fontSize: 12, color: '#666' }}>Final Rank</div>
+        </div>
+      </div>
+      <Btn
+        variant="accent"
+        onClick={() => {
+          setModuleProgress((p) => ({ ...p, 3: 100 }));
+          setPoints((p) => p + 150);
+          navigate(screens.COMPLETION);
+        }}
+        style={{ fontSize: 16, padding: '14px 36px', borderRadius: 10 }}
+      >
+        What's Next? →
+      </Btn>
+      <br />
+      <Btn
+        variant="ghost"
+        onClick={() => {
+          setModuleProgress((p) => ({ ...p, 3: 100 }));
+          setPoints((p) => p + 150);
+          navigate(screens.HOME);
+        }}
+        style={{ marginTop: 8 }}
+      >
+        Return to Home
+      </Btn>
+    </div>
+  );
+
+  const renderCompletion = () => (
+    <div style={{ padding: '48px 32px', maxWidth: 560, margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>🎊</div>
+        <div
+          style={{
+            fontSize: 26,
+            fontWeight: 700,
+            fontFamily: "'Playfair Display', serif",
+            marginBottom: 8,
+            lineHeight: 1.3,
+          }}
+        >
+          You're Ready to Take the Next Step!
+        </div>
+        <div style={{ fontSize: 15, color: '#666', lineHeight: 1.6 }}>
+          Now that you understand how HSAs work, here are some ways to continue your journey toward
+          smarter healthcare savings.
+        </div>
+      </div>
+
+      {/* Next steps cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+        <div
+          style={{
+            background: '#f0f7f4',
+            border: '1.5px solid #c8e6d8',
+            borderRadius: 12,
+            padding: '18px 20px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 14,
+          }}
+        >
+          <span style={{ fontSize: 24, flexShrink: 0 }}>🔍</span>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
+              Research HSA Providers
+            </div>
+            <div style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>
+              Compare different HSA providers like Fidelity, HSA Bank, and Lively. Look for low
+              fees, investment options, and user-friendly tools.
+            </div>
+          </div>
+        </div>
+        <div
+          style={{
+            background: '#f8f9fa',
+            border: '1.5px solid #e4e4e4',
+            borderRadius: 12,
+            padding: '18px 20px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 14,
+          }}
+        >
+          <span style={{ fontSize: 24, flexShrink: 0 }}>💼</span>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
+              Check Your Insurance Eligibility
+            </div>
+            <div style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>
+              Verify whether your current or future employer health plan is HSA-qualified (HDHP). If
+              you're still on a parent's plan, check your options when you transition.
+            </div>
+          </div>
+        </div>
+        <div
+          style={{
+            background: '#f8f9fa',
+            border: '1.5px solid #e4e4e4',
+            borderRadius: 12,
+            padding: '18px 20px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 14,
+          }}
+        >
+          <span style={{ fontSize: 24, flexShrink: 0 }}>📊</span>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
+              Plan Your Contributions
+            </div>
+            <div style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>
+              Even small monthly contributions add up! Remember the 2025 limit is $4,300 for
+              individuals. Start with what fits your budget.
+            </div>
+          </div>
+        </div>
+        <div
+          style={{
+            background: '#f8f9fa',
+            border: '1.5px solid #e4e4e4',
+            borderRadius: 12,
+            padding: '18px 20px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 14,
+          }}
+        >
+          <span style={{ fontSize: 24, flexShrink: 0 }}>🗣️</span>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
+              Talk to Your Benefits Advisor
+            </div>
+            <div style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>
+              When you start a job, ask HR about HSA options during open enrollment. You now have
+              the knowledge to ask the right questions!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Mascot
+        message="You've come a long way! Remember — the earlier you start saving in an HSA, the more you benefit from tax-free growth. You've got this! 🌟"
+        style={{ marginBottom: 24 }}
+      />
+
+      <div style={{ textAlign: 'center' }}>
+        <Btn
+          variant="accent"
+          onClick={() => navigate(screens.HOME)}
+          style={{ padding: '12px 32px' }}
+        >
+          ← Back to Home
+        </Btn>
+      </div>
+    </div>
+  );
+
+  const screenMap = {
+    [screens.HOME]: renderHome,
+    [screens.PROGRESS]: renderProgress,
+    [screens.ALL_MODULES]: renderAllModules,
+    [screens.GAME_INTRO]: renderGameIntro,
+    [screens.GAME_QUIZ]: renderGameQuiz,
+    [screens.GAME_SLIDER]: renderGameSlider,
+    [screens.GAME_RESULT]: renderGameResult,
+    [screens.MODULE2_INTRO]: renderModule2Intro,
+    [screens.MODULE2_QUIZ]: renderModule2Quiz,
+    [screens.MODULE3_INTRO]: renderModule3Intro,
+    [screens.MODULE3_FINAL]: renderModule3Final,
+    [screens.COMPLETION]: renderCompletion,
+  };
+
+  return (
+    <div
+      style={{
+        fontFamily: "'DM Sans', sans-serif",
+        minHeight: '100vh',
+        background: '#fff',
+        color: '#1a1a1a',
+      }}
+    >
+      <Nav
+        currentScreen={screen}
+        onNavigate={navigate}
+        timeLeft={isGameScreen ? formatTime(timeLeft) : null}
+        moduleName={
+          currentModule === 1
+            ? 'Insurance Basics'
+            : currentModule === 2
+              ? 'HSAs: What Are They?'
+              : 'HSAs: Sign Me Up!'
+        }
+        showGame={isGameScreen}
+      />
+      <PointsPopup points={pointsEarned} show={showPoints} />
+      {screenMap[screen]?.() || renderHome()}
+    </div>
+  );
+}
+
+export default App;
