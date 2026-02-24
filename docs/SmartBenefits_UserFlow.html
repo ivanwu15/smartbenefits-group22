@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SmartBenefits – User Flow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #f8f9fa; color: #1a1a1a; min-height: 100vh; }
+
+  .header { 
+    padding: 32px 48px 24px; 
+    background: #fff; 
+    border-bottom: 1.5px solid #e4e4e4;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700; margin-bottom: 4px;
+  }
+  .header h1 span { color: #2d6a4f; }
+  .header p { font-size: 14px; color: #888; }
+
+  .legend {
+    display: flex; gap: 24px; padding: 16px 48px; background: #fff;
+    border-bottom: 1.5px solid #e4e4e4; flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+
+  .canvas {
+    padding: 48px;
+    overflow-x: auto;
+    min-height: calc(100vh - 130px);
+  }
+
+  /* Flow sections */
+  .flow-container {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .flow-section {
+    position: relative;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #aaa;
+    margin-bottom: 16px;
+    padding-left: 4px;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: nowrap;
+  }
+
+  /* Screen nodes */
+  .node {
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    min-width: 180px;
+    max-width: 220px;
+    position: relative;
+    transition: all 0.2s ease;
+    cursor: default;
+    flex-shrink: 0;
+  }
+  .node:hover {
+    border-color: #2d6a4f;
+    box-shadow: 0 4px 20px rgba(45,106,79,0.12);
+    transform: translateY(-2px);
+  }
+
+  .node-icon { font-size: 24px; margin-bottom: 8px; }
+  .node-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+  .node-desc { font-size: 12px; color: #888; line-height: 1.5; }
+  .node-tag {
+    display: inline-block;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px;
+    margin-top: 8px;
+  }
+
+  .node.entry { border-color: #2d6a4f; border-width: 2px; }
+  .node.entry .node-title { color: #2d6a4f; }
+
+  .node.game { border-left: 3px solid #b8860b; }
+  .node.quiz { border-left: 3px solid #5b7dd4; }
+  .node.interactive { border-left: 3px solid #9b59b6; }
+  .node.result { border-left: 3px solid #2d6a4f; }
+  .node.nav { border-left: 3px solid #888; }
+  .node.cta { border-left: 3px solid #e74c3c; }
+  .node.locked { border-left: 3px solid #ccc; opacity: 0.6; }
+
+  /* Arrows */
+  .arrow-container {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .arrow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .arrow-line {
+    width: 32px; height: 2px; background: #ccc;
+  }
+  .arrow-head {
+    width: 0; height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-left: 8px solid #ccc;
+  }
+  .arrow-label {
+    position: absolute;
+    top: -18px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px; color: #aaa;
+    white-space: nowrap;
+    background: #f8f9fa;
+    padding: 0 4px;
+  }
+
+  .arrow-down {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+  }
+  .arrow-down .arrow-line-v {
+    width: 2px; height: 28px; background: #ccc;
+  }
+  .arrow-down .arrow-head-v {
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #ccc;
+  }
+  .arrow-down .arrow-label {
+    position: static;
+    transform: none;
+    margin-top: 2px;
+    font-size: 10px; color: #aaa;
+  }
+
+  /* Gamification sidebar */
+  .gamification-strip {
+    background: #fff;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 8px;
+  }
+  .gamification-strip h3 {
+    font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: #2d6a4f; margin-bottom: 12px;
+  }
+  .gam-items { display: flex; gap: 16px; flex-wrap: wrap; }
+  .gam-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #555;
+    background: #f0f7f4; padding: 6px 12px; border-radius: 6px;
+  }
+
+  /* Branch container */
+  .branch {
+    display: flex;
+    gap: 20px;
+    padding-left: 40px;
+    position: relative;
+  }
+  .branch::before {
+    content: '';
+    position: absolute;
+    left: 16px; top: 0; bottom: 50%;
+    width: 2px; background: #ddd;
+  }
+
+  /* Module wrapper */
+  .module-block {
+    background: #fafbfc;
+    border: 1.5px dashed #ddd;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 8px;
+  }
+  .module-block-title {
+    font-size: 13px; font-weight: 700; color: #555;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .module-block-title .badge {
+    font-size: 10px; padding: 2px 8px;
+    border-radius: 4px; font-weight: 600;
+  }
+  .module-block-title .easy { background: #e8f5e9; color: #2d6a4f; }
+  .module-block-title .medium { background: #fff3e0; color: #b8860b; }
+  .module-block-title .hard { background: #fce4ec; color: #a33; }
+
+  /* Persistent nav note */
+  .persistent-nav {
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 12px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .persistent-nav .nav-btns {
+    display: flex; gap: 6px;
+  }
+  .persistent-nav .nav-btn {
+    background: #333; color: #ccc;
+    padding: 4px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+  }
+
+  /* Notes */
+  .flow-note {
+    background: #fffde7;
+    border: 1px solid #fff9c4;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #666;
+    max-width: 320px;
+    line-height: 1.5;
+  }
+  .flow-note strong { color: #444; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Smart<span>Benefits</span> — User Flow</h1>
+  <p>HSA Gamified Learning App · Interactive Wireframe User Flow Diagram</p>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#2d6a4f;"></div> Entry / Result</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#b8860b;"></div> Game Scenario</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#5b7dd4;"></div> Quiz / Question</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#9b59b6;"></div> Interactive Element</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e74c3c;"></div> Call-to-Action</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#888;"></div> Navigation Page</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ccc;"></div> Locked / Coming Soon</div>
+</div>
+
+<div class="canvas">
+<div class="flow-container">
+
+  <!-- Persistent Nav -->
+  <div class="persistent-nav">
+    <span>📌 Persistent Navigation Bar (visible on all screens):</span>
+    <div class="nav-btns">
+      <div class="nav-btn">Home</div>
+      <div class="nav-btn">All Modules</div>
+      <div class="nav-btn">My Progress</div>
+    </div>
+    <span style="color:#888; margin-left:8px;">+ Timer ⏱ (game screens only)</span>
+  </div>
+
+  <!-- ====== ENTRY ====== -->
+  <div class="flow-section">
+    <div class="section-label">Entry Point</div>
+    <div class="flow-row">
+      <div class="node entry">
+        <div class="node-icon">🏠</div>
+        <div class="node-title">Home Dashboard</div>
+        <div class="node-desc">
+          Personalized greeting, mascot encouragement, current progress ring, points/rank/streak stats
+        </div>
+        <div class="node-tag" style="background:#e8f5e9; color:#2d6a4f;">Default Landing</div>
+      </div>
+
+      <div class="arrow-container">
+        <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+        <div class="arrow-label">click module card</div>
+      </div>
+
+      <!-- 3 paths -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="node game" style="min-width:160px; padding:12px 16px;">
+          <div class="node-title" style="font-size:13px;">→ Module 1</div>
+          <div class="node-desc">Intro to Healthcare</div>
+          <div class="node-tag easy" style="background:#e8f5e9; color:#2d6a4f; font-size:9px;">Always Open</div>
+        </div>
+        <div class="node nav" style="min-width:160px; padding:12px 16px;">
+          <div class="node-title" style="font-size:13px;">→ Module 2</div>
+          <div class="node-desc">HSAs: What Are They?</div>
+          <div class="node-tag" style="background:#fff3e0; color:#b8860b; font-size:9px;">🔒 Requires Module 1</div>
+        </div>
+        <div class="node nav" style="min-width:160px; padding:12px 16px;">
+          <div class="node-title" style="font-size:13px;">→ Module 3</div>
+          <div class="node-desc">HSAs: Sign Me Up!</div>
+          <div class="node-tag" style="background:#fce4ec; color:#a33; font-size:9px;">🔒 Requires Module 2</div>
+        </div>
+      </div>
+
+      <div class="arrow-container">
+        <div class="arrow"><div class="arrow-line" style="width:24px;"></div><div class="arrow-head"></div></div>
+      </div>
+
+      <!-- Side nav pages -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="node nav" style="min-width:170px;">
+          <div class="node-icon">📚</div>
+          <div class="node-title">All Modules</div>
+          <div class="node-desc">Overview of Module 1/2/3 with status badges (Done, In Progress, Locked)</div>
+        </div>
+        <div class="node nav" style="min-width:170px;">
+          <div class="node-icon">📊</div>
+          <div class="node-title">My Progress</div>
+          <div class="node-desc">Rank title, overall progress bar, stats, completed module cards with Play Again</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== MODULE 1 ====== -->
+  <div class="flow-section">
+    <div class="section-label">Module 1 — Intro to Healthcare (Easy · 0–150 pts)</div>
+    <div class="module-block">
+      <div class="module-block-title">
+        Module 1 Learning Loop
+        <span class="badge easy">Easy</span>
+        <span style="font-weight:400; color:#888; font-size:11px;">Scenario → Feedback → Quiz → Slider → Result</span>
+      </div>
+      <div class="flow-row">
+        <div class="node game">
+          <div class="node-icon">💼</div>
+          <div class="node-title">Scenario: Job Offer</div>
+          <div class="node-desc">
+            User chooses between Plan A (low deductible) and Plan B (HDHP, HSA eligible). Mascot gives immediate feedback.
+          </div>
+          <div class="node-tag" style="background:#fff3e0; color:#b8860b;">Narrative Choice</div>
+        </div>
+
+        <div class="arrow-container">
+          <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="arrow-label">continue</div>
+        </div>
+
+        <div class="node quiz">
+          <div class="node-icon">❓</div>
+          <div class="node-title">Quiz: Which Plan?</div>
+          <div class="node-desc">
+            "Which plan qualifies for an HSA?" Info bubble teaches HDHP concept first. Recall question +25 pts.
+          </div>
+          <div class="node-tag" style="background:#e3f2fd; color:#1565c0;">Recall +25 pts</div>
+        </div>
+
+        <div class="arrow-container">
+          <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="arrow-label">correct / explain</div>
+        </div>
+
+        <div class="node interactive">
+          <div class="node-icon">💰</div>
+          <div class="node-title">HSA Contribution Slider</div>
+          <div class="node-desc">
+            Drag slider $0–$358/mo. Real-time piggy bank + tax savings calculation. Apply question +75 pts.
+          </div>
+          <div class="node-tag" style="background:#f3e5f5; color:#7b1fa2;">Apply +75 pts</div>
+        </div>
+
+        <div class="arrow-container">
+          <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="arrow-label">lock in</div>
+        </div>
+
+        <div class="node result">
+          <div class="node-icon">🎉</div>
+          <div class="node-title">Module 1 Complete!</div>
+          <div class="node-desc">
+            Points summary, accuracy score, mascot congratulations. Module 1 → 100%.
+          </div>
+          <div class="node-tag" style="background:#e8f5e9; color:#2d6a4f;">Unlocks Module 2</div>
+        </div>
+      </div>
+
+      <!-- Feedback loops -->
+      <div style="margin-top:16px; display:flex; gap:16px; flex-wrap:wrap;">
+        <div class="flow-note">
+          <strong>🔄 Feedback Loop:</strong> Wrong answer → mascot explains correct answer → user can still continue. Correct answer → +points, streak counter increments, progress bar advances.
+        </div>
+        <div class="flow-note">
+          <strong>🔥 Streak Bonus:</strong> 3+ correct in a row → double points (25→50). Resets on wrong answer.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== MODULE 2 ====== -->
+  <div class="flow-section">
+    <div class="section-label">Module 2 — HSAs: What Are They? (Medium · 150–300 pts)</div>
+    <div class="module-block">
+      <div class="module-block-title">
+        Module 2 Learning Loop
+        <span class="badge medium">Medium</span>
+        <span style="font-weight:400; color:#888; font-size:11px;">Intro → Quiz (4 options) → Feedback → Continue</span>
+      </div>
+      <div class="flow-row">
+        <div class="node entry">
+          <div class="node-icon">📘</div>
+          <div class="node-title">Module 2 Intro</div>
+          <div class="node-desc">
+            Learning objectives listed: eligibility, contribution limits, tax advantages, fund usage, rollover rules.
+          </div>
+          <div class="node-tag" style="background:#e8f5e9; color:#2d6a4f;">Preview Content</div>
+        </div>
+
+        <div class="arrow-container">
+          <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="arrow-label">begin</div>
+        </div>
+
+        <div class="node quiz">
+          <div class="node-icon">❓</div>
+          <div class="node-title">Quiz: HSA Eligibility</div>
+          <div class="node-desc">
+            "Who is NOT eligible for an HSA?" 4 options (harder than Module 1's 2 options). Info bubble teaches 4 eligibility rules first.
+          </div>
+          <div class="node-tag" style="background:#e3f2fd; color:#1565c0;">Recall +25 pts · 4 choices</div>
+        </div>
+
+        <div class="arrow-container">
+          <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="arrow-label">correct / explain</div>
+        </div>
+
+        <div class="node result">
+          <div class="node-icon">✅</div>
+          <div class="node-title">Module 2 Complete</div>
+          <div class="node-desc">
+            Mascot feedback, Module 2 → 100%. Two options: continue to Module 3 or return home.
+          </div>
+          <div class="node-tag" style="background:#e8f5e9; color:#2d6a4f;">Unlocks Module 3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== MODULE 3 ====== -->
+  <div class="flow-section">
+    <div class="section-label">Module 3 — HSAs: Sign Me Up! (Hard · 300–450 pts)</div>
+    <div class="module-block">
+      <div class="module-block-title">
+        Module 3 Action Flow
+        <span class="badge hard">Hard</span>
+        <span style="font-weight:400; color:#888; font-size:11px;">Challenge → Completion → Enrollment CTA</span>
+      </div>
+      <div class="flow-row">
+        <div class="node entry">
+          <div class="node-icon">🎯</div>
+          <div class="node-title">Module 3 Intro</div>
+          <div class="node-desc">
+            Final challenge overview: apply all knowledge, earn up to 150 bonus points, enrollment readiness score.
+          </div>
+        </div>
+
+        <div class="arrow-container">
+          <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="arrow-label">start challenge</div>
+        </div>
+
+        <div class="node result">
+          <div class="node-icon">🏆</div>
+          <div class="node-title">Final Completion</div>
+          <div class="node-desc">
+            "Congrats! You've helped [name] feel prepared for all things HSA." Total points, HSA Master rank earned.
+          </div>
+          <div class="node-tag" style="background:#e8f5e9; color:#2d6a4f;">+150 pts</div>
+        </div>
+
+        <div class="arrow-container">
+          <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+          <div class="arrow-label">"What's Next?"</div>
+        </div>
+
+        <div class="node cta">
+          <div class="node-icon">🚀</div>
+          <div class="node-title">Next Steps & Resources</div>
+          <div class="node-desc">
+            Actionable next steps: research HSA providers, check insurance eligibility, plan contributions, talk to benefits advisor.
+          </div>
+          <div class="node-tag" style="background:#e8f5e9; color:#2d6a4f;">Encourage Action</div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <div class="flow-note">
+          <strong>📝 Note:</strong> Module 3 does not collect personal information. Instead, it empowers users with concrete next steps to independently explore and participate in HSAs, avoiding privacy/trust concerns.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== GAMIFICATION LAYER ====== -->
+  <div class="flow-section">
+    <div class="section-label">Gamification Layer (Active Across All Game Screens)</div>
+    <div class="gamification-strip">
+      <h3>🎮 Gamification Elements — Based on Lander's Theory (Table 1)</h3>
+      <div class="gam-items">
+        <div class="gam-item">📖 Narrative Scenarios</div>
+        <div class="gam-item">🐷 Mascot / Avatar</div>
+        <div class="gam-item">⭐ Points (+25 recall / +75 apply)</div>
+        <div class="gam-item">📈 Levels (1→2→3)</div>
+        <div class="gam-item">📊 Progress Bars</div>
+        <div class="gam-item">💬 Immediate Feedback</div>
+        <div class="gam-item">🔥 Streak Bonus (3+ = 2×)</div>
+        <div class="gam-item">⏱ Time Limit (~5-8 min)</div>
+        <div class="gam-item">🏅 Rank System</div>
+        <div class="gam-item">🎯 Challenges</div>
+      </div>
+    </div>
+
+    <div class="gamification-strip" style="margin-top:16px;">
+      <h3>🏅 Rank Progression</h3>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <div style="background:#f8f9fa; border-radius:8px; padding:10px 16px; text-align:center;">
+          <div style="font-size:11px; color:#888;">0 pts</div>
+          <div style="font-size:14px; font-weight:700;">Newcomer</div>
+        </div>
+        <div style="color:#ccc;">→</div>
+        <div style="background:#f0f7f4; border-radius:8px; padding:10px 16px; text-align:center;">
+          <div style="font-size:11px; color:#888;">100+ pts</div>
+          <div style="font-size:14px; font-weight:700; color:#2d6a4f;">Health Explorer</div>
+        </div>
+        <div style="color:#ccc;">→</div>
+        <div style="background:#fff3e0; border-radius:8px; padding:10px 16px; text-align:center;">
+          <div style="font-size:11px; color:#888;">250+ pts</div>
+          <div style="font-size:14px; font-weight:700; color:#b8860b;">Benefits Pro</div>
+        </div>
+        <div style="color:#ccc;">→</div>
+        <div style="background:#e8f5e9; border-radius:8px; padding:10px 16px; text-align:center; border:2px solid #2d6a4f;">
+          <div style="font-size:11px; color:#888;">400+ pts</div>
+          <div style="font-size:14px; font-weight:700; color:#2d6a4f;">HSA Master 🏆</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== UNLOCK LOGIC ====== -->
+  <div class="flow-section">
+    <div class="section-label">Module Unlock Logic</div>
+    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+      <div class="node" style="border-left:3px solid #2d6a4f; min-width:280px;">
+        <div class="node-title">Module 1 → Module 2</div>
+        <div class="node-desc" style="line-height:1.8;">
+          <strong>Trigger:</strong> User clicks "Lock in Contribution" on slider screen<br/>
+          <strong>Action:</strong> moduleProgress[1] = 100%<br/>
+          <strong>Result:</strong> Module 2 card changes from 🔒 Locked → In Progress<br/>
+          <strong>Visual:</strong> Card becomes clickable, opacity 1.0, border highlight
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; color:#ccc; font-size:24px;">→</div>
+      <div class="node" style="border-left:3px solid #b8860b; min-width:280px;">
+        <div class="node-title">Module 2 → Module 3</div>
+        <div class="node-desc" style="line-height:1.8;">
+          <strong>Trigger:</strong> User answers quiz + clicks "Continue to Module 3"<br/>
+          <strong>Action:</strong> moduleProgress[2] = 100%<br/>
+          <strong>Result:</strong> Module 3 card changes from 🔒 Locked → In Progress<br/>
+          <strong>Visual:</strong> Same unlock animation as above
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; color:#ccc; font-size:24px;">→</div>
+      <div class="node" style="border-left:3px solid #e74c3c; min-width:280px;">
+        <div class="node-title">Module 3 → Next Steps</div>
+        <div class="node-desc" style="line-height:1.8;">
+          <strong>Trigger:</strong> User clicks "What's Next?"<br/>
+          <strong>Action:</strong> moduleProgress[3] = 100%, +150 pts<br/>
+          <strong>Result:</strong> Navigate to resources & next steps page<br/>
+          <strong>Goal:</strong> Empower user to independently explore HSAs
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TARGET USER -->
+  <div class="flow-section">
+    <div class="section-label">Target User</div>
+    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+      <div class="node" style="border-left:3px solid #2d6a4f; max-width:360px;">
+        <div class="node-icon">🎓</div>
+        <div class="node-title">UCI Undergraduate Students</div>
+        <div class="node-desc" style="line-height:1.8;">
+          Currently enrolled or approaching graduation. Often on parental or student health plans with limited HSA exposure. Face complex insurance decisions at graduation with little preparation.
+        </div>
+      </div>
+      <div class="node" style="border-left:3px solid #b8860b; max-width:360px;">
+        <div class="node-icon">🎯</div>
+        <div class="node-title">Success Metrics</div>
+        <div class="node-desc" style="line-height:1.8;">
+          1. Know more about health insurance after playing<br/>
+          2. Want to enroll in an HSA<br/>
+          3. Feel comfortable and not overwhelmed about HSA enrollment
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>
