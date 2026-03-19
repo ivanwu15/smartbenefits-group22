@@ -2,9 +2,11 @@
 
 > A gamified health literacy learning app that helps college students understand Health Savings Accounts (HSAs) through interactive, story-based modules.
 
-![Status](https://img.shields.io/badge/Status-In%20Development-yellow)
-![React](https://img.shields.io/badge/React-18.2-blue)
+![Status](https://img.shields.io/badge/Status-Live-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
+![UCI](https://img.shields.io/badge/UCI-INF%20172-0064A4)
+
+**🎮 [Try the Live Demo](https://ivanwu15.github.io/smartbenefits-group22/demo/SmartBenefitsDemo.html)** &nbsp;|&nbsp; **🌐 [Project Website](https://ivanwu15.github.io/smartbenefits-group22/)** &nbsp;|&nbsp; **🎨 [Figma Prototype](https://www.figma.com/design/gQVFUtKSjuvcVmH6Ys6a0N/INF-172-Health-Literacy-App?node-id=46-78&p=f&t=00PJUWiBODkfjgm6-0)**
 
 ---
 
@@ -16,7 +18,6 @@
 - [Game Modules](#game-modules)
 - [Gamification Design](#gamification-design)
 - [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
 - [Development Roadmap](#development-roadmap)
 - [Team](#team)
@@ -26,15 +27,15 @@
 
 ## About
 
-Healthcare costs in the U.S. reached $5.3 trillion in 2024, yet many young adults lack the financial literacy to navigate health insurance and Health Savings Accounts (HSAs). Existing HSA education platforms primarily target users who already have employer-sponsored high-deductible health plans, leaving a gap for college students and young adults.
+Healthcare costs in the U.S. reached $5.3 trillion in 2024, yet many young adults lack the financial literacy to navigate health insurance and Health Savings Accounts (HSAs). Our research found that **87.5% of UCI undergraduates had never heard of HSAs** before taking our survey — despite HSAs being one of the most powerful tax-advantaged financial tools available to them.
 
 **SmartBenefits** bridges this gap with a gamified, story-based learning experience that teaches:
 
-- Healthcare insurance fundamentals
-- HSA eligibility, contribution limits, and tax advantages
-- Practical next steps for exploring and participating in HSAs
+- Healthcare insurance fundamentals (PPO vs. HDHP)
+- HSA eligibility, contribution limits, and triple tax advantages
+- Practical HSA usage in real-world medical expense scenarios
 
-Unlike passive FAQs and articles, SmartBenefits uses interactive narrative scenarios, immediate feedback, and a progression system to make learning engaging and actionable.
+Unlike passive FAQs and articles, SmartBenefits follows **Alex** — a new grad navigating his first job offer — through three story-driven modules with immediate feedback, a progression system, and achievement badges.
 
 ---
 
@@ -47,169 +48,121 @@ Unlike passive FAQs and articles, SmartBenefits uses interactive narrative scena
 - Have the lowest HSA participation and contribution rates among all age groups
 - Need early, accessible education before encountering real financial consequences
 
+**Research basis:** Pre-survey of 32 UCI undergraduates — 87.5% had never heard of HSAs, 60.8% felt overwhelmed by healthcare decisions, and 50% reported low confidence in understanding insurance concepts.
+
 ---
 
 ## Features
 
 ### 🎮 Gamified Learning
 
-- **3 progressive modules** with increasing difficulty (Easy → Medium → Hard)
+- **3 progressive modules** with story-driven scenarios
+- **Extra Credit** advanced challenge section
 - **Point system**: Recall questions (+25 pts), Apply questions (+75 pts)
-- **Streak bonuses**: 3+ correct answers = double points
-- **Rank progression**: Newcomer → Health Explorer → Benefits Pro → HSA Master
+- **Achievement badges**: Earn a unique badge per completed module
 - **Module unlock system**: Complete each module to unlock the next
 
 ### 🐷 Interactive Mascot
 
-- Piggy bank mascot provides guidance and encouragement throughout
-- Delivers immediate explanatory feedback after every question
+- Piggy bank mascot (Alex) provides guidance and encouragement throughout
+- Delivers immediate, per-option explanatory feedback after every question
 
 ### 📊 Progress Tracking
 
-- Real-time progress bars per module
-- Overall game completion percentage
-- Personal stats dashboard (points, streak, modules completed)
+- Real-time progress bar and dot indicators per module
+- My Progress dashboard with arc-circle completion visualization
+- localStorage persistence — resume mid-session at any time
 
 ### 🎯 Realistic Scenarios
 
-- Job offer health plan selection
-- HSA contribution planning with interactive slider
-- Real-time tax savings calculator
+- Job offer health plan selection (PPO vs. HDHP)
+- HSA contribution math and tax advantage calculation
+- Real-world qualified expense decision-making
 
 ---
 
 ## Game Modules
 
-### Module 1: Intro to Healthcare (Easy · 0–150 pts)
+### Module 1: The Offer Letter (Healthcare Basics)
 
-- Differentiate healthcare plans (employer, Medicaid, Medicare, HDHP, etc.)
-- Understand copayments, deductibles, and premiums
-- Interactive scenario: choose a health plan for a new job
+- Differentiate healthcare plans (PPO, HMO, EPO, HDHP)
+- Understand deductibles, premiums, and copays
+- Interactive scenario: Alex receives a job offer and must choose a health plan
+- **Badge earned:** 📋 Plan Pro
 
-### Module 2: HSAs — What Are They? (Medium · 150–300 pts)
+### Module 2: HSA Fundamentals
 
-- HSA eligibility criteria (HDHP, no Medicare, not a dependent, etc.)
-- Contribution limits ($4,300 individual / $8,550 family for 2025)
-- Triple tax advantage and fund rollover rules
-- Qualified medical expenses
+- HSA eligibility criteria
+- Triple tax advantage (contributions, growth, withdrawals)
+- Contribution limits ($4,150 individual for 2024)
+- Comparison with FSAs
+- **Badge earned:** 🎓 HSA Scholar
 
-### Module 3: HSAs — Sign Me Up! (Hard · 300–450 pts)
+### Module 3: HSA in Action
 
-- Apply all knowledge in comprehensive scenarios
-- Personalized next steps to explore HSAs further
-- Resources: research providers, check eligibility, plan contributions, talk to benefits advisor
+- Qualified vs. non-qualified medical expenses
+- Real-world spending decisions with Alex's HSA balance
+- Long-term HSA growth strategies
+- **Badge earned:** 💰 HSA Pro
+
+### ⭐ Extra Credit
+
+- Advanced compound growth calculation challenge
+- Tests mastery of HSA investment and long-term strategy concepts
 
 ---
 
 ## Gamification Design
 
-Based on Lander's Theory of Gamified Learning and empirical research from Guilan University of Medical Sciences:
+Based on Lander's Theory of Gamified Learning and empirical research:
 
-| Element       | Implementation                                   |
-| ------------- | ------------------------------------------------ |
-| Narrative     | Job offer scenario, health plan decisions        |
-| Avatar/Mascot | 🐷 Piggy bank guide with contextual messages     |
-| Points        | +25 recall / +75 apply / streak bonus 2×         |
-| Levels        | 3 modules with progressive difficulty            |
-| Progress Bars | Per-module % and overall completion              |
-| Feedback      | Immediate explanatory feedback per question      |
-| Challenge     | Timed sessions (~5-8 min), increasing complexity |
-| Rank System   | 4-tier progression based on total points         |
+| Element | Implementation |
+|---|---|
+| Narrative | Job offer scenario, Alex's first year of insurance decisions |
+| Avatar/Mascot | 🐷 Piggy bank guide with contextual, per-option messages |
+| Points | +25 recall / +75 apply questions |
+| Levels | 3 modules with progressive difficulty + Extra Credit |
+| Progress | Per-step dot indicators + arc-circle overall completion |
+| Feedback | Immediate per-option explanatory feedback |
+| Achievements | Module completion badges with unique names |
+| Final Results | Dynamic 4-scenario result page based on EC completion |
 
-**Learning Loop**: Scenario Choice → Immediate Feedback → Checkpoint Quiz → Points/Level Progression
+**Learning Loop**: Scenario Presentation → Answer Selection → Immediate Feedback → Points → Module Badge → Unlock Next
 
 ---
 
 ## Tech Stack
 
-| Layer           | Technology                                        |
-| --------------- | ------------------------------------------------- |
-| Frontend        | React 18                                          |
-| Styling         | CSS-in-JS (inline styles)                         |
-| Fonts           | Google Fonts (DM Sans, Playfair Display, DM Mono) |
-| Build Tool      | Vite                                              |
-| Deployment      | GitHub Pages                                      |
-| Version Control | Git + GitHub                                      |
+| Layer | Technology |
+|---|---|
+| Frontend | Vanilla HTML, CSS, JavaScript (single-page app) |
+| Fonts | Google Fonts (Inter, Playfair Display) |
+| State | localStorage persistence via custom STATE object |
+| Assets | Base64-encoded inline SVG mascots (assets.js) |
+| Deployment | GitHub Pages (`/docs` subfolder) |
+| Version Control | Git + GitHub |
 
----
-
-## Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [Git](https://git-scm.com/)
-- A GitHub account
-
-### Installation
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/smartbenefits.git
-cd smartbenefits
-
-# 2. Install dependencies
-npm install
-
-# 3. Start development server
-npm run dev
-```
-
-Open `http://localhost:5173` in your browser.
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-### Deploy to GitHub Pages
-
-```bash
-npm run deploy
-```
+> The demo is built as a standalone single-file HTML app — no build tools or frameworks required. Just open `SmartBenefitsDemo.html` alongside `assets.js` in any browser.
 
 ---
 
 ## Project Structure
 
 ```
-smartbenefits/
+smartbenefits-group22/
+├── docs/                          # GitHub Pages root
+│   ├── index.html                 # Project portfolio website
+│   ├── demo/
+│   │   ├── SmartBenefitsDemo.html # Main interactive demo (~1MB)
+│   │   └── assets.js              # Base64 mascot/logo assets (~784KB)
+│   └── web/                       # Portfolio website images
+│       ├── hf-home.png            # Hi-fi screenshots
+│       ├── lf-home.png            # Lo-fi wireframes
+│       ├── persona.png            # User persona
+│       ├── survey result.png      # Survey data
+│       └── ...
+├── src/                           # React prototype (Sprint 2)
 ├── public/
-│   └── favicon.ico
-├── src/
-│   ├── components/
-│   │   ├── Nav.jsx              # Navigation bar (Home, All Modules, My Progress)
-│   │   ├── ModuleCard.jsx       # Module selection card with status badges
-│   │   ├── Mascot.jsx           # Piggy bank mascot with speech bubble
-│   │   ├── CircleProgress.jsx   # Circular progress ring
-│   │   ├── ProgressBar.jsx      # Linear progress bar
-│   │   ├── PointsPopup.jsx      # Points animation overlay
-│   │   └── Button.jsx           # Reusable button component
-│   ├── screens/
-│   │   ├── Home.jsx             # Dashboard with stats and module cards
-│   │   ├── AllModules.jsx       # Module overview list
-│   │   ├── MyProgress.jsx       # Progress stats and completed modules
-│   │   ├── module1/
-│   │   │   ├── Scenario.jsx     # Job offer health plan choice
-│   │   │   ├── Quiz.jsx         # HDHP recall question
-│   │   │   ├── Slider.jsx       # HSA contribution slider
-│   │   │   └── Result.jsx       # Module 1 completion
-│   │   ├── module2/
-│   │   │   ├── Intro.jsx        # Module 2 learning objectives
-│   │   │   └── Quiz.jsx         # HSA eligibility question
-│   │   └── module3/
-│   │       ├── Intro.jsx        # Final challenge overview
-│   │       ├── Final.jsx        # Completion + rank earned
-│   │       └── NextSteps.jsx    # Resources and action items
-│   ├── App.jsx                  # Main app with routing and state
-│   ├── main.jsx                 # Entry point
-│   └── index.css                # Global styles
-├── docs/
-│   ├── wireframe.html           # Interactive wireframe prototype
-│   ├── userflow.html            # User flow diagram
-│   ├── project-proposal.pdf     # Project proposal document
-│   └── gamified-learning-research.pdf
 ├── package.json
 ├── vite.config.js
 └── README.md
@@ -220,60 +173,64 @@ smartbenefits/
 ## Development Roadmap
 
 ### Sprint 1 (Weeks 1–2) ✅
-
+- [x] User research — pre-HSA survey (n=32 undergraduates)
+- [x] Student interviews (10-minute sessions)
+- [x] Gamified learning literature review
 - [x] Requirements document
-- [x] User research (surveys, interviews)
-- [x] Gamified learning research
 
 ### Sprint 2 (Weeks 3–4) ✅
-
-- [x] Lo-fi wireframes
-- [x] Mid-fi wireframes
-- [x] Interactive wireframe prototype
+- [x] Lo-fi wireframes (6 screens)
+- [x] Mid-fi interactive wireframe prototype
 - [x] User flow diagram
-- [x] Brand identity
+- [x] Brand identity and design system
 
-### Sprint 3 (Weeks 5–6) 🔄
+### Sprint 3 (Weeks 5–6) ✅
+- [x] Hi-fi Figma prototype
+- [x] Full SmartBenefits demo — all 3 modules
+- [x] Extra Credit section
+- [x] Gamification system (points, badges, streaks)
+- [x] My Progress dashboard
+- [x] Final Results page (4 dynamic scenarios)
 
-- [ ] Hi-fi prototype in Figma
-- [ ] React project setup
-- [ ] Component development
-- [ ] Module 1 implementation
-- [ ] Module 2 implementation
-- [ ] Module 3 implementation
+### Sprint 4 (Week 7) ✅
+- [x] Usability testing
+- [x] GitHub Pages deployment
+- [x] Final report and video presentation
 
-### Sprint 4 (Week 7)
-
-- [ ] Final testing and polish
-- [ ] GitHub Pages deployment
-- [ ] Final report and video
+### Sprint 5 (Week 10) ✅ Shipped
+- [x] Full demo polish and bug fixes
+- [x] Project portfolio website (`docs/index.html`)
+- [x] Live deployment at GitHub Pages
 
 ---
 
 ## Team
 
-**Group 22** — University of California, Irvine
+**Group 22** — University of California, Irvine · INF 172 · Winter 2026
 
-| Role     | Responsibilities                                   |
-| -------- | -------------------------------------------------- |
-| Lead     | Team coordination, requirements docs, presentation |
-| UI/UX    | Wireframes, prototypes, visual design              |
-| CTO      | Project website, code implementation               |
-| Research | Gamified learning research, content design         |
+| Name | Role | Responsibilities |
+|---|---|---|
+| Lisa Wu | Project Manager | Team coordination, timeline, requirements, presentations |
+| Patricia Abenoja | Design Lead | Wireframes, Figma prototype, visual design |
+| Sammi Li | Design Lead | Wireframes, Figma prototype, visual design |
+| Yifan Wu | Tech Lead | Demo development, project website, GitHub deployment |
+| Samantha Hong | Content Lead | Gamified learning research, HSA content strategy |
 
 ---
 
 ## References
 
-- Casagrande, S. S., & Lawrence, J. M. (2025). Trends in delaying and forgoing medical care due to cost. _BMJ Open Diabetes Research & Care_.
-- Choi, A. Y., & Rosso, R. J. (2025). Health Savings Accounts (HSAs). _Congress.gov_.
-- Khoshnoodifar, M., et al. (2023). Effectiveness of gamification in enhancing learning and attitudes. _JAMP, 11_(4), 230–239.
-- Kaya, O. S., & Ercag, E. (2023). The impact of challenge-based gamification on students' learning outcomes. _Education and Information Technologies_.
-- Machireddy, J. R. (2021). Data-Driven Insights: Analyzing the Effects of Underutilized HRAs and HSAs. _JBAI_.
-- Waters, A. R., et al. (2022). Health insurance literacy among AYA cancer survivors. _Supportive Care in Cancer_.
+- Casagrande, S. S., & Lawrence, J. M. (2025). Trends in delaying and forgoing medical care due to cost. *BMJ Open Diabetes Research & Care*.
+- Choi, A. Y., & Rosso, R. J. (2025). Health Savings Accounts (HSAs). *Congress.gov*.
+- Hartman, M., Martin, A. B., Lassman, D., & Catlin, A. (2026). National health care spending increased 7.2 percent in 2024. *Health Affairs*.
+- Johnson, D., Deterding, S., Kuhn, K. A., et al. (2016). Gamification for health and wellbeing: a systematic review. *Internet Interventions*.
+- Kaya, O. S., & Ercag, E. (2023). The impact of challenge-based gamification on students' learning outcomes. *Education and Information Technologies*.
+- Khoshnoodifar, M., et al. (2023). Effectiveness of gamification in enhancing learning and attitudes. *JAMP, 11*(4), 230–239.
+- Machireddy, J. R. (2021). Data-Driven Insights: Analyzing the Effects of Underutilized HRAs and HSAs. *JBAI*.
+- Waters, A. R., et al. (2022). Health insurance literacy among AYA cancer survivors. *Supportive Care in Cancer*.
 
 ---
 
 ## License
 
-This project is for educational purposes as part of a university course at UC Irvine.
+This project is for educational purposes as part of INF 172 at the University of California, Irvine.
