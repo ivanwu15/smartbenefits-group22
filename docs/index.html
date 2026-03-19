@@ -4,6 +4,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>SmartBenefits — HSA Gamified Learning App</title>
+  <meta name="description" content="SmartBenefits — A gamified HSA learning platform for college students. Learn health insurance, HSAs, and make informed financial decisions through interactive modules."/>
+  <meta property="og:title" content="SmartBenefits — HSA Gamified Learning"/>
+  <meta property="og:description" content="Join Alex on his first day at a new job and learn everything you need to know about HSAs — one of the most powerful financial tools you've probably never heard of."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://ivanwu15.github.io/smartbenefits-group22/"/>
+  <meta name="twitter:card" content="summary"/>
+  <meta name="twitter:title" content="SmartBenefits — HSA Gamified Learning"/>
+  <meta name="twitter:description" content="A gamified HSA learning experience for UCI students. INF 172 · Winter 2026 · Group 22"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
 <style>
@@ -11,7 +19,7 @@
   --brown:#6B4423;--brown-dark:#5A3A1C;--brown-mid:#8B5E3C;--brown-light:#F5EDE4;
   --green:#2D9B51;--green-dark:#1a7a3a;--green-light:#E8F5EC;--green-pale:#F0F9F3;
   --sage:#E3EBDD;--sage-dark:#C8D9C0;
-  --dark:#1C1917;--charcoal:#292524;--gray:#6A7282;
+  --dark:#1C1917;--charcoal:#292524;--gray:#555F6D;
   --gray-light:#F7F6F5;--gray-border:#E7E5E4;
   --gold:#D4A017;--gold-light:#FEF3C7;
   --radius:16px;--shadow:0 4px 24px rgba(0,0,0,0.07);--max:1100px
@@ -145,8 +153,8 @@ section{padding:96px 32px}
 .survey-big img{width:100%;height:auto;display:block}
 
 /* ── COMPETITIVE ── */
-.comp-wrap{max-width:860px;padding:6px;
-  background:#fff;border-radius:18px;padding:12px;
+.comp-wrap{max-width:860px;
+  background:#fff;border-radius:18px;padding:8px;
   box-shadow:0 1px 0 #E5E5E5,0 2px 0 #EFEFEF,0 8px 32px rgba(0,0,0,0.09);
   border:1px solid rgba(0,0,0,0.06);transition:all 0.3s;
 }
@@ -218,7 +226,7 @@ section{padding:96px 32px}
 .usability-card .u-icon{font-size:28px;margin-bottom:12px}
 .usability-card h4{font-size:15px;font-weight:700;margin-bottom:8px;color:var(--charcoal)}
 .usability-card p{font-size:13px;color:var(--gray);line-height:1.65}
-.usability-quote{background:linear-gradient(135deg,var(--brown-light),#FAF0E4);border-left:4px solid var(--brown);border-radius:0 14px 14px 0;padding:24px 28px;margin-top:32px;font-size:15px;font-style:italic;color:var(--charcoal);line-height:1.75;box-shadow:0 4px 16px rgba(107,68,35,0.07)}
+.usability-quote{background:linear-gradient(135deg,var(--green-light),rgba(240,249,243,0.8));border-left:4px solid var(--green);border-radius:0 14px 14px 0;padding:24px 28px;margin-top:32px;font-size:15px;font-style:italic;color:var(--charcoal);line-height:1.75;box-shadow:0 4px 16px rgba(45,155,81,0.07)}
 
 /* ── TIMELINE ── */
 .timeline{display:flex;flex-direction:column;gap:0;position:relative;max-width:720px}
@@ -226,6 +234,7 @@ section{padding:96px 32px}
 .timeline-item{display:flex;gap:28px;padding:0 0 36px 0;position:relative}
 .timeline-dot{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;position:relative;z-index:1;border:3px solid #fff;box-shadow:0 0 0 2px var(--gray-border);transition:all 0.3s}
 .timeline-item.done .timeline-dot{background:linear-gradient(135deg,var(--green),var(--green-dark));box-shadow:0 0 0 3px rgba(45,155,81,0.2),0 4px 12px rgba(45,155,81,0.25);color:#fff}
+.timeline-item.done.final .timeline-dot{background:linear-gradient(135deg,#D4A017,#B8860B);box-shadow:0 0 0 3px rgba(212,160,23,0.25),0 4px 16px rgba(212,160,23,0.35)}
 .timeline-item:not(.done) .timeline-dot{background:var(--gray-light);color:var(--gray)}
 .timeline-content{padding-top:8px}
 .timeline-content .week{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:6px}
@@ -248,7 +257,12 @@ section{padding:96px 32px}
 
 /* ── TEAM ── */
 .team-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
-.team-card{background:#fff;border-radius:var(--radius);padding:24px 16px;text-align:center;border:1.5px solid var(--gray-border);transition:all 0.3s;position:relative;overflow:hidden}
+.team-card{background:#fff;border-radius:var(--radius);padding:28px 16px 24px;text-align:center;border:1.5px solid var(--gray-border);transition:all 0.3s;position:relative;overflow:hidden}
+.team-card::after{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--radius) var(--radius) 0 0}
+.team-card.tc-brown::after{background:linear-gradient(90deg,var(--brown),var(--brown-mid))}
+.team-card.tc-green::after{background:linear-gradient(90deg,var(--green-dark),var(--green))}
+.team-card.tc-blue::after{background:linear-gradient(90deg,#2A3E7A,#3B5EA6)}
+.team-card.tc-gold::after{background:linear-gradient(90deg,#B8860B,var(--gold))}
 .team-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--sage),transparent 60%);opacity:0;transition:opacity 0.3s}
 .team-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,0.09);border-color:var(--sage-dark)}
 .team-card:hover::before{opacity:1}
@@ -259,14 +273,14 @@ section{padding:96px 32px}
 .team-card p{font-size:12px;color:var(--gray);line-height:1.55;position:relative;z-index:1}
 
 /* ── CTA ── */
-.cta-section{background:linear-gradient(135deg,#5A3A1C 0%,var(--brown) 50%,#7A4820 100%);color:#fff;text-align:center;padding:100px 32px;position:relative;overflow:hidden}
+.cta-section{background:linear-gradient(135deg,#5A3A1C 0%,var(--brown) 50%,#7A4820 100%);color:#fff;text-align:center;padding:96px 32px;position:relative;overflow:hidden}
 .cta-section::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.03) 1px,transparent 1px);background-size:32px 32px}
 .cta-section::after{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(255,255,255,0.05),transparent 70%);border-radius:50%;pointer-events:none}
 .cta-inner{max-width:600px;margin:0 auto;position:relative;z-index:1}
-.cta-section h2{font-family:'Playfair Display',serif;font-size:42px;font-weight:800;color:#fff;margin-bottom:16px}
+.cta-section h2{font-family:'Playfair Display',serif;font-size:42px;font-weight:800;color:#fff;margin-bottom:12px}
 .cta-section p{font-size:16px;color:rgba(255,255,255,0.72);line-height:1.75;margin-bottom:36px}
 .cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.cta-mascot{margin-bottom:24px;animation:float 4s ease-in-out infinite}
+.cta-mascot{margin-bottom:12px;animation:float 4s ease-in-out infinite}
 .cta-mascot img{width:120px;height:auto;filter:drop-shadow(0 8px 24px rgba(0,0,0,0.2))}
 
 /* ── REFERENCES ── */
@@ -388,6 +402,17 @@ footer .links a:hover{color:#fff}
 }
 .back-top.visible{opacity:1;transform:translateY(0)}
 .back-top:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(107,68,35,0.45)}
+
+
+/* Section background helpers */
+.bg-gray{background:var(--gray-light)}
+.bg-sage{background:var(--sage)}
+
+/* ── Timeline Sprint 5 shipped tags ── */
+.timeline-shipped{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;margin-bottom:4px}
+.shipped-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:linear-gradient(135deg,var(--gold-light),#FDE68A);color:#92400E;border:1px solid rgba(212,160,23,0.25);letter-spacing:0.3px}
+
+.stat-icon{font-size:16px;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -430,14 +455,17 @@ footer .links a:hover{color:#fff}
       </div>
       <div class="hero-stats-row">
         <div class="hero-stat-pill">
+          <div class="stat-icon">📊</div>
           <div class="num">87.5%</div>
           <div class="lbl">Never heard of HSAs</div>
         </div>
         <div class="hero-stat-pill">
+          <div class="stat-icon">🎓</div>
           <div class="num">32</div>
           <div class="lbl">Students surveyed</div>
         </div>
         <div class="hero-stat-pill">
+          <div class="stat-icon">📚</div>
           <div class="num">3</div>
           <div class="lbl">Learning modules</div>
         </div>
@@ -537,7 +565,7 @@ footer .links a:hover{color:#fff}
 </section>
 
 <!-- COMPETITIVE ANALYSIS -->
-<section style="background:var(--gray-light)" id="gamification">
+<section class="bg-gray" id="gamification">
   <div class="section-inner">
     <div class="section-label reveal">Gamification Research</div>
     <h2 class="section-title reveal">Why gamification works for learning</h2>
@@ -573,7 +601,7 @@ footer .links a:hover{color:#fff}
     </div>
   </div>
 </section>
-<section id="competitive" style="padding-bottom:48px">
+<section id="competitive" style="padding:96px 32px 48px">
   <div class="section-inner">
     <div class="section-label reveal">Competitive Analysis</div>
     <h2 class="section-title reveal">Identifying the gap in the market</h2>
@@ -629,7 +657,7 @@ footer .links a:hover{color:#fff}
 </section>
 
 <!-- USER FLOW -->
-<section style="background:var(--gray-light)" id="userflow">
+<section class="bg-gray" id="userflow">
   <div class="section-inner">
     <div class="section-label reveal">User Flow</div>
     <h2 class="section-title reveal">How users move through the experience</h2>
@@ -682,7 +710,7 @@ footer .links a:hover{color:#fff}
 </section>
 
 <!-- USABILITY TESTING -->
-<section style="background:var(--sage)" id="usability">
+<section class="bg-sage" id="usability">
   <div class="section-inner">
     <div class="section-label reveal">Usability Testing</div>
     <h2 class="section-title reveal">Testing with real students</h2>
@@ -754,12 +782,21 @@ footer .links a:hover{color:#fff}
           <span class="status status-done">✓ Complete</span>
         </div>
       </div>
+      <div class="timeline-item done final reveal">
+        <div class="timeline-dot">🏆</div>
+        <div class="timeline-content">
+          <div class="week">Week 10 · Sprint 5</div>
+          <h4>Project Complete</h4>
+          <p>SmartBenefits successfully delivered — three fully gamified HSA learning modules, Extra Credit, achievement system, and a live GitHub Pages deployment.</p>
+          <span class="status" style="background:var(--gold-light);color:#92400E;margin-top:12px">🏆 Shipped</span>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- LIMITATIONS & FUTURE WORK -->
-<section style="background:var(--gray-light)" id="future">
+<section class="bg-gray" id="future">
   <div class="section-inner">
     <div class="section-label reveal">Reflection</div>
     <h2 class="section-title reveal">Limitations &amp; Future Work</h2>
@@ -794,31 +831,31 @@ footer .links a:hover{color:#fff}
     <h2 class="section-title reveal">Group 22</h2>
     <p class="section-desc reveal">A multidisciplinary team of UCI students passionate about health literacy, interactive design, and making complex topics accessible.</p>
     <div class="team-grid">
-      <div class="team-card reveal">
+      <div class="team-card tc-brown reveal">
         <div class="team-avatar">👤</div>
         <div class="realname">Lisa Wu</div>
         <div class="role">Project Manager</div>
         <p>Coordination, requirements gathering, and presentations</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card tc-green reveal">
         <div class="team-avatar">🎨</div>
         <div class="realname">Patricia Abenoja</div>
         <div class="role">Design Lead</div>
         <p>Wireframes, Figma prototypes, visual design system</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card tc-green reveal">
         <div class="team-avatar">🎨</div>
         <div class="realname">Sammi Li</div>
         <div class="role">Design Lead</div>
         <p>Wireframes, Figma prototypes, visual design system</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card tc-blue reveal">
         <div class="team-avatar">💻</div>
         <div class="realname">Yifan Wu</div>
         <div class="role">Tech Lead</div>
         <p>SmartBenefits demo development and implementation</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card tc-gold reveal">
         <div class="team-avatar">📚</div>
         <div class="realname">Samantha Hong</div>
         <div class="role">Content Lead</div>
